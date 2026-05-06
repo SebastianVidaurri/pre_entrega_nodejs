@@ -41,20 +41,23 @@ const apiService = {
     }
 }
 
-
-//inicio
-
+//iniciamos
 const args = process.argv.slice(2)
-console.log(args[0])
+//desestructuramos args par que se más legible 
+const [action, resource] = args;
 
 
-/*
-// Probamos traer el producto con ID 1
-apiService.getProductById(1)
-    .then(producto => {
-        console.log("Producto encontrado:");
-        console.log(producto);
-    })
-    .catch(error => {
-        console.error("Error al obtener el producto:", error);
-    });*/
+//usamos una funsion async por que vamos a utilizar await apiService
+async function main() {
+    switch (action){
+        case "GET":
+            break;
+        case "POST":
+            break;
+        case "DELETE":
+            breack;
+        default:
+            console.log("Acción no reconocida. Usa GET, POST o DELETE")
+    }
+    
+}
