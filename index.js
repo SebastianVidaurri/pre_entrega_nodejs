@@ -44,20 +44,49 @@ const apiService = {
 //iniciamos
 const args = process.argv.slice(2)
 //desestructuramos args par que se más legible 
-const [action, resource] = args;
+let [action, resource, id] = args;
 
+if (!id){
+    [resource, id] = resource.split("/")
+}
 
 //usamos una funsion async por que vamos a utilizar await apiService
 async function main() {
-    switch (action){
-        case "GET":
-            break;
-        case "POST":
-            break;
-        case "DELETE":
-            breack;
-        default:
-            console.log("Acción no reconocida. Usa GET, POST o DELETE")
+    if (resource == "products"){
+            switch (action){
+
+                case "GET":    
+                    if (!id){ //Si no hay ID entonces traemos todos los productos
+                        console.log("Lista de TODOS los productos: ");
+                        const productos = await apiService.getAllProducts();
+                        console.log(productos);
+                    } else { //Busqueda con id
+                        console.log(`Producto con ID ${id}: `);
+                        const producto = await apiService.getProductById(id);
+                        console.log(producto);
+                    };
+                    break;
+
+                case "POST":
+                    break;
+
+                case "DELETE":
+                    if (id){
+                        console.log(`Eliminando el producto con id: ${id}...`)
+                        const borrado= await apiService.deleteProduct(id);
+                        console.log("Pruducto eliminado: ", borrado);
+                    } else {
+                        console.log("Error: Debes indicar un ID (ej: products/2)")
+                    }
+                    break;
+
+                default:
+                    console.log("Acción no reconocida. Usa GET, POST o DELETE")
+        }
+
     }
     
+    
 }
+
+main()
