@@ -40,9 +40,19 @@ const apiService = {
     async deleteProduct(id) {
         const response = await fetch(`${this.baseUrl}/products/${id}`, {
              method: "DELETE" });
-         return response.json();
-    },
-
+        
+             if (!response.ok) {
+                throw new Error(`Error ${response.status}: No se pudo realizar la eliminación`);
+            }
+        
+            const contentSize = response.headers.get('content-length');
+            if (contentSize === '0' || contentSize === null) { //igual que en el GET la API devuelve un 200 aún si el producto no existe por lo tanto hay que validar
+                throw new Error(`El producto con ID ${id} no existe, por lo tanto no se puede eliminar.`);
+            }
+        
+            return response.json();
+        },
+    /*
     //metodo para actualizar un producto
     async updateProduct(id, product) {
         const response = await fetch(`${this.baseUrl}/products/${id}`, {
@@ -50,7 +60,7 @@ const apiService = {
              body: JSON.stringify(product)
          });
          return response.json();
-    }
+    }*/
 }
 
 //iniciamos
@@ -69,7 +79,7 @@ if (resource && resource.includes("/")){
 async function main() {
     try{
         if (resource == "products"){
-                switch (action){
+                switch (action){ //CASOS GET POST DELETE
 
                     case "GET":
                         const finalId = id || args[2];
@@ -85,14 +95,33 @@ async function main() {
                         break;
 
                     case "POST":
+                        const [ , , nombre, precio, categoria] = args;
+                        const bodyProduct = {
+                                title: nombre,
+                                price: precio,
+                                category: categoria
+                        };
 
+                        if (!nombre) { //Verificamos que almenos haya un nombre para el producto
+                            throw new Error("Faltan parámetros. Uso: npm start POST products <nombre> <precio> <categoria>");
+                        }
+                        const newProduct = await apiService.createProduct(bodyProduct);
+                        console.log("✅ Producto creado:");
+                        console.log(newProduct);
                         break;
 
                     case "DELETE":
-                        if (id){
-                            console.log(`Eliminando el producto con id: ${id}...`)
-                            const borrado= await apiService.deleteProduct(id);
-                            console.log("Pruducto eliminado: ", borrado);
+                        const deleteId = id || args[2];
+                        if (deleteId){
+                            console.log(`Eliminando el producto con id: ${deleteId}...`)
+                            const borrado = await apiService.deleteProduct(deleteId);
+                            
+                            if (!borrado) {
+                                throw new Error(`El producto ${deleteId} no se pudo eliminar o no existe.`);
+                            }
+                            console.log("✅ Producto eliminado exitosamente:");
+                            console.log(borrado);
+                        
                         } else {
                              throw new Error (`Error: Debes indicar un ID (ej: products/2)`)
                         }
@@ -100,8 +129,10 @@ async function main() {
 
                     default:
                         console.log("Acción no reconocida. Usa GET, POST o DELETE")
-            }
+                }
 
+        } else {
+            throw new Error (`Error: Ingresa correctamente los argumentos`)
         }
     } catch(error) {
         // MOSTRAR EL ERROR POR PANTALLA
