@@ -45,12 +45,13 @@ const apiService = {
                 throw new Error(`Error ${response.status}: No se pudo realizar la eliminación`);
             }
         
-            const contentSize = response.headers.get('content-length');
-            if (contentSize === '0' || contentSize === null) { //igual que en el GET la API devuelve un 200 aún si el producto no existe por lo tanto hay que validar
+            const textData = await response.text();;
+            // Si el texto está vacío, entonces sí es un error real de "no existe"
+            if (!textData || textData === "null") {
                 throw new Error(`El producto con ID ${id} no existe, por lo tanto no se puede eliminar.`);
             }
         
-            return response.json();
+            return JSON.parse(textData);
         },
     /*
     //metodo para actualizar un producto
